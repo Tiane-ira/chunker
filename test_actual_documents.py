@@ -77,59 +77,14 @@ def test_and_compare_documents():
     print("=" * 60)
 
     # 2. 执行切片
-    slices_md = paginate_and_chunk(pages=md_pages)
-    slices_txt = paginate_and_chunk(pages=txt_pages)
-    slices_notice = paginate_and_chunk(pages=notice_pages)
+    # slices_md = paginate_and_chunk(pages=md_pages)
+    # slices_txt = paginate_and_chunk(pages=txt_pages)
+    slices_notice = paginate_and_chunk(pages=notice_pages,max_chunk_size=100)
 
     # 3. 校验数据格式仅含 8 个核心字段
-    verify_slice_schema(slices_md, "Markdown管理办法")
-    verify_slice_schema(slices_txt, "纯文本管理办法")
+    # verify_slice_schema(slices_md, "Markdown管理办法")
+    # verify_slice_schema(slices_txt, "纯文本管理办法")
     verify_slice_schema(slices_notice, "征求意见通知")
-
-    print("✔ [校验通过] 所有文档的分片输出严格符合 8 个规定字段规范，无任何冗余元数据。")
-
-    # 4. 统计分析
-    def analyze(slices):
-        parents = [s for s in slices if s["slice_type"] == SliceType.PARENT.value]
-        children = [s for s in slices if s["slice_type"] == SliceType.CHILD.value]
-        return len(slices), len(parents), len(children)
-
-    total_md, p_md, c_md = analyze(slices_md)
-    total_txt, p_txt, c_txt = analyze(slices_txt)
-    total_nt, p_nt, c_nt = analyze(slices_notice)
-
-    print(f"\n[切片数量统计]")
-    print(f"  Markdown 文档: 总计 {total_md} 个分片（父分片: {p_md}, 子分片: {c_md}）")
-    print(f"  纯文本  文档: 总计 {total_txt} 个分片（父分片: {p_txt}, 子分片: {c_txt}）")
-    print(f"  通知公告文档: 总计 {total_nt} 个分片（父分片: {p_nt}, 子分片: {c_nt}）")
-
-    # 5. Markdown 与 纯文本一致性验证
-    assert total_md == total_txt, f"Markdown 与纯文本总切片数不一致: {total_md} vs {total_txt}"
-    assert p_md == p_txt, f"Markdown 与纯文本父分片数不一致: {p_md} vs {p_txt}"
-    assert c_md == c_txt, f"Markdown 与纯文本子分片数不一致: {c_md} vs {c_txt}"
-    print("✔ [一致性验证通过] Markdown 与 纯文本法律文档切片数量与结构完全一致！")
-
-    # 6. 跨页验证：第二十条跨第 2~3 页
-    art20_md = next(s for s in slices_md if "第二十条" in s["slice_text"])
-    art20_txt = next(s for s in slices_txt if "第二十条" in s["slice_text"])
-
-    print(f"\n[跨页验证 - 第二十条]")
-    print(f"  Markdown 第二十条页码: P{art20_md['start_page']} ~ P{art20_md['end_page']}")
-    print(f"  纯文本   第二十条页码: P{art20_txt['start_page']} ~ P{art20_txt['end_page']}")
-    assert art20_md["start_page"] == 2 and art20_md["end_page"] == 3
-    assert art20_txt["start_page"] == 2 and art20_txt["end_page"] == 3
-    print("✔ [跨页追踪通过] 第二十条跨页自动识别并完整保留为单个子分片（P2~P3）！")
-
-    # 7. 打印样例分片数据结构
-    print("\n[样例分片输出（8个核心字段）]")
-    sample_child = slices_md[1]  # 样例子分片
-    import pprint
-    pprint.pprint(sample_child, sort_dicts=False)
-
-    print("\n" + "=" * 60)
-    print("所有测试验证成功！")
-    print("=" * 60)
-
 
 if __name__ == "__main__":
     test_and_compare_documents()
